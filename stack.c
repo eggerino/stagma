@@ -9,7 +9,7 @@ static ReallocState _stack_realloc(Stack* stack, size_t new_capacity);
 
 Stack* stack_new(size_t capacity) {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
-    Data* items = (Data*)malloc(sizeof(Data) * capacity);
+    int64_t* items = (int64_t*)malloc(sizeof(int64_t) * capacity);
 
     if (stack == NULL || items == NULL) {
         free(stack);
@@ -31,18 +31,18 @@ void stack_delete(Stack* stack) {
     free(stack);
 }
 
-StackStatus stack_push(Stack* stack, const Data* data) {
+StackStatus stack_push(Stack* stack, int64_t data) {
     if (stack->length >= stack->capacity) {
         if (_stack_realloc(stack, 2 * stack->capacity) != OK) {
             return STACK_STATUS_NO_MEMORY;
         }
     }
 
-    stack->items[stack->length++] = *data;
+    stack->items[stack->length++] = data;
     return STACK_STATUS_OK;
 }
 
-StackStatus stack_pop(Stack* stack, Data* data) {
+StackStatus stack_pop(Stack* stack, int64_t* data) {
     if (stack->length == 0) {
         return STACK_STATUS_EMPTY;
     }
@@ -59,7 +59,7 @@ StackStatus stack_pop(Stack* stack, Data* data) {
 }
 
 ReallocState _stack_realloc(Stack* stack, size_t new_capacity) {
-    Data* new_items = (Data*)malloc(sizeof(Data) * new_capacity);
+    int64_t* new_items = (int64_t*)malloc(sizeof(int64_t) * new_capacity);
     if (new_items == NULL) {
         return FAILED;
     }
@@ -68,7 +68,7 @@ ReallocState _stack_realloc(Stack* stack, size_t new_capacity) {
     // size increase -> padding with garbo
     // size decrease -> only garbo in unused stack
     size_t num_to_copy = stack->capacity < new_capacity ? stack->capacity : new_capacity;
-    memcpy(new_items, stack->items, sizeof(Data) * num_to_copy);
+    memcpy(new_items, stack->items, sizeof(int64_t) * num_to_copy);
     free(stack->items);
 
     stack->capacity = new_capacity;

@@ -3,11 +3,11 @@
 
 #include <stddef.h>
 
+#include "ast.h"
 #include "stack.h"
-#include "statement.h"
 
 int run_start(Stack* stack, int argc, char** argv);
-int run_statement(Stack* stack, Statement* statement);
+int run_statement(Stack* stack, Statement* statement, int64_t* current_statement);
 int run_exit(Stack* stack);
 
 #endif

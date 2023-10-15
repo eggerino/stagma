@@ -2,10 +2,10 @@
 #define STACK_H_
 
 #include <stddef.h>
-#include "statement.h"
+#include <stdint.h>
 
 typedef struct Stack {
-    Data* items;
+    int64_t* items;
     size_t length;
     size_t capacity;
 } Stack;
@@ -18,7 +18,7 @@ typedef enum StackStatus {
 
 Stack* stack_new(size_t capacity);
 void stack_delete(Stack* stack);
-StackStatus stack_push(Stack* stack, const Data* data);
-StackStatus stack_pop(Stack* stack, Data* data);
+StackStatus stack_push(Stack* stack, int64_t data);
+StackStatus stack_pop(Stack* stack, int64_t* data);
 
 #endif
