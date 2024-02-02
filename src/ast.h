@@ -50,6 +50,7 @@ typedef struct WhileInstructionContext {
     Instructions inner_block;
 } WhileInstructionContext;
 
+#define COUNT_INSTRUCTIONCONTEXT 2
 typedef union InstructionContext {
     IfInstructionContext if_instruction;
     WhileInstructionContext while_instruction;
