@@ -1,0 +1,15 @@
+# A "Hello, World!" program #
+
+72 print    # H #
+101 print   # e #
+108 print   # l #
+108 print   # l #
+111 print   # o #
+44 print    # , #
+32 print    #   #
+87 print    # W #
+111 print   # o #
+114 print   # r #
+108 print   # l #
+100 print   # d #
+33 print    # ! #
