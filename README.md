@@ -11,7 +11,7 @@ Educational project to learn about interpreters/compilers for executing source c
 - `cmake ..`
 - `make`
 
-# Run interpeter
+# Run interpreter
 
 `stagma <SOURCE-FILE> [...ARGS]`
 
