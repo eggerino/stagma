@@ -1,0 +1,23 @@
+# Read the number n and print the first n letters in ascending order #
+
+if                  # Pop argc #
+                    # Use first argument as n #
+else
+    input           # Get n from stdin if no arguments were provided #
+end
+
+dup                 # Make a decrementable version of n called i #
+dup                 # Duplicate i to survive condition check #
+
+while               # Duplicate of i is poped #
+    dup -1 *        # Push -i #
+    3 deref         # Push n #
+    65 + +          # Compute 65 + n - i #
+    print           # Print the (n - i)th letter #
+
+    1 -             # Decrement i #
+    dup             # Duplicate i to survive condition check #
+end
+
+pop pop             # Pop i and n #
+10 print            # Add a new line #

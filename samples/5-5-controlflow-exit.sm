@@ -1,0 +1,2 @@
+input exit  # Exit with the given exit code #
+65 print    # This print instruction will not be executed #

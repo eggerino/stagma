@@ -1,0 +1,6 @@
+# Call this program with 3 arguments #
+pop         # Pop the argument count (3) #
+print       # Prints the first argument #
+print       # Prints the second argument #
+print       # Prints the third argument #
+10 print    # Add a new line #

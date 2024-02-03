@@ -1,0 +1,17 @@
+input               # Get the first condition #
+if                  # Check if the first input is non-zero #
+    input           # Get the second condition #
+    if              # Check if the second input is non-zero #
+        65 print    # A on true, true #
+    else
+        66 print    # B on true, false #
+    end
+else
+    input           # Get the second condition #
+    if              # Check if the second input is non-zero #
+        67 print    # C on false, true #
+    else
+        68 print    # D on false, false #
+    end
+end
+10 print            # Add a new line #

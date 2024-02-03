@@ -1,0 +1,11 @@
+# Print all given arguments #
+
+dup             # Duplicate argc to survive condition check #
+while           # Duplicate gets pop #
+    swap        # Swap the argument to the top #
+    print       # print the argument #
+    1 -         # Decrement argc #
+    dup         # Duplicate the decremented argc to survive condition check #
+end
+pop             # Final decremented argc gets poped #
+10 print        # Add a new line #

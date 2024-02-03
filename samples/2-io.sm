@@ -1,0 +1,2 @@
+input print     # Read from stdin and print it to stdout #
+input err       # Read from stdin and print it to stdout #

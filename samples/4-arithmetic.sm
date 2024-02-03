@@ -1,0 +1,7 @@
+64 8 + print        #  64 +   8 = 72 (H) #
+80 2 - print        #  80 -   2 = 78 (N) #
+20 4 * print        #  20 *   4 = 80 (P) #
+587 7 / print       # 587 /   7 = 83 (S) (rounded) #
+185 100 % print     # 185 % 100 = 85 (U) #
+9 2 ^ print         #   9 ^   2 = 81 (Q) #
+10 print            # Add a new line #

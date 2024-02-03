@@ -1,0 +1,5 @@
+0 1 1 1             # Push 1 zero and 3 non-zero values #
+while               # Check the top and execute the loop (3 times in this case) #
+    65 print        # Print "A" #
+end
+10 print            # Add a new line #

@@ -1,0 +1,7 @@
+input               # Get the condition #
+if                  # Check if the input is non-zero #
+    89 print        # Print "Y" if the input was non-zero #
+else
+    78 print        # Print "N" if the input was zero #
+end
+10 print            # Add a new line #

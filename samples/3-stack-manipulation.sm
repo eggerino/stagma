@@ -1,0 +1,12 @@
+74 73 72 71 70 69 68 67 66 65   # Build a stack with ascii values from J to A #
+print                           # Print the top (A) and pop it #
+pop                             # Pop the next value (B) and discard it #
+print                           # Print the next from the stack (C) and pop #
+swap                            # Swap the two top elements (D) and (E) #
+print print                     # Print them (E) (D). They ascending this time #
+dup                             # Duplicate the top element (F) #
+print print                     # Print the duplicate (F) and the original (F) #
+4 deref                         # Push a "pointer" of 4 referencing (J) and deref #
+print                           # A copy of the dereferenced value (J) is printed #
+print print print print         # Print the remaining 4 characters #
+10 print                        # Add a new line #
