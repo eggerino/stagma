@@ -13,7 +13,7 @@
             if ((da).capacity == 0) {                                              \
                 (da).capacity = 1;                                                 \
             }                                                                      \
-            (da).items = realloc((da).items, (da).capacity);                       \
+            (da).items = realloc((da).items, (da).capacity * sizeof(*(da).items)); \
             assert((da).items && "Unable to increase capacity of dynamic array."); \
         }                                                                          \
         (da).items[(da).count++] = item;                                           \
@@ -24,7 +24,7 @@
         --(da).count;                                                              \
         if ((da).count < (da).capacity / DA_GROWTH_FACTOR) {                       \
             (da).capacity /= DA_GROWTH_FACTOR;                                     \
-            (da).items = realloc((da).items, (da).capacity);                       \
+            (da).items = realloc((da).items, (da).capacity * sizeof(*(da).items)); \
             assert((da).items && "Unable to decrease capacity of dynamic array."); \
         }                                                                          \
     } while (0)

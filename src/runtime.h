@@ -6,6 +6,8 @@
 
 #include "ast.h"
 
+#define stack_top(stack) (stack).items[(stack).count - 1]
+
 typedef struct {
     size_t count;
     size_t capacity;

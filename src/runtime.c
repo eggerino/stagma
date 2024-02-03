@@ -7,8 +7,6 @@
 
 #include "dynamic_array.h"
 
-#define _stack_top(stack) (stack).items[(stack).count - 1]
-
 static void _execute_push(Stack* restrict stack, const PushInstructionContext* restrict context);
 static void _execute_pop(Stack* stack);
 static void _execute_swap(Stack* stack);
@@ -130,15 +128,15 @@ void _execute_pop(Stack* stack) {
 void _execute_swap(Stack* stack) {
     assert(stack->count >= 2 && "At least two items need to be on the stack to swap");
 
-    int64_t temp = _stack_top(*stack);
-    _stack_top(*stack) = stack->items[stack->count - 2];
+    int64_t temp = stack_top(*stack);
+    stack_top(*stack) = stack->items[stack->count - 2];
     stack->items[stack->count - 2] = temp;
 }
 
 void _execute_dup(Stack* stack) {
     assert(stack->count >= 1 && "At least one item needs to be on the stack to dup");
 
-    da_push(*stack, _stack_top(*stack));
+    da_push(*stack, stack_top(*stack));
 }
 
 void _execute_deref(Stack* stack) {
@@ -160,7 +158,7 @@ void _execute_deref(Stack* stack) {
 void _execute_print(Stack* stack) {
     assert(stack->count >= 1 && "At least one item needs to be on the stack to print");
 
-    char character = _stack_top(*stack);
+    char character = stack_top(*stack);
     da_pop(*stack);
 
     fprintf(stdout, "%c", character);
@@ -169,7 +167,7 @@ void _execute_print(Stack* stack) {
 void _execute_err(Stack* stack) {
     assert(stack->count >= 1 && "At least one item needs to be on the stack to err");
 
-    char character = _stack_top(*stack);
+    char character = stack_top(*stack);
     da_pop(*stack);
 
     fprintf(stderr, "%c", character);
@@ -187,65 +185,65 @@ void _execute_input(Stack* stack) {
 void _execute_add(Stack* stack) {
     assert(stack->count >= 2 && "At least two items needs to be on the stack to add");
 
-    int64_t summand = _stack_top(*stack);
+    int64_t summand = stack_top(*stack);
     da_pop(*stack);
 
-    _stack_top(*stack) += summand;
+    stack_top(*stack) += summand;
 }
 
 void _execute_sub(Stack* stack) {
     assert(stack->count >= 2 && "At least two items needs to be on the stack to sub");
 
-    int64_t subtrahend = _stack_top(*stack);
+    int64_t subtrahend = stack_top(*stack);
     da_pop(*stack);
 
-    _stack_top(*stack) -= subtrahend;
+    stack_top(*stack) -= subtrahend;
 }
 
 void _execute_mul(Stack* stack) {
     assert(stack->count >= 2 && "At least two items needs to be on the stack to mul");
 
-    int64_t factor = _stack_top(*stack);
+    int64_t factor = stack_top(*stack);
     da_pop(*stack);
 
-    _stack_top(*stack) *= factor;
+    stack_top(*stack) *= factor;
 }
 
 void _execute_div(Stack* stack) {
     assert(stack->count >= 2 && "At least two items needs to be on the stack to div");
 
-    int64_t divisor = _stack_top(*stack);
+    int64_t divisor = stack_top(*stack);
     da_pop(*stack);
 
-    _stack_top(*stack) /= divisor;
+    stack_top(*stack) /= divisor;
 }
 
 void _execute_mod(Stack* stack) {
     assert(stack->count >= 2 && "At least two items needs to be on the stack to mod");
 
-    int64_t divisor = _stack_top(*stack);
+    int64_t divisor = stack_top(*stack);
     da_pop(*stack);
 
-    _stack_top(*stack) %= divisor;
+    stack_top(*stack) %= divisor;
 }
 
 void _execute_pow(Stack* stack) {
     assert(stack->count >= 2 && "At least two items needs to be on the stack to pow");
 
-    int64_t exponent = _stack_top(*stack);
+    int64_t exponent = stack_top(*stack);
     da_pop(*stack);
 
-    int64_t base = _stack_top(*stack);
+    int64_t base = stack_top(*stack);
 
     int64_t result = (int64_t)(pow(base, exponent) + 0.5);  // only floating point arithmetic si provided by math.h
 
-    _stack_top(*stack) = result;
+    stack_top(*stack) = result;
 }
 
 void _execute_if(Stack* restrict stack, const IfInstructionContext* restrict context) {
     assert(stack->count >= 1 && "At least one item needs to be on the stack to evaluate the confiditon of the if");
 
-    int64_t condition = _stack_top(*stack);
+    int64_t condition = stack_top(*stack);
     da_pop(*stack);
 
     if (condition) {
@@ -258,14 +256,14 @@ void _execute_if(Stack* restrict stack, const IfInstructionContext* restrict con
 void _execute_while(Stack* restrict stack, const WhileInstructionContext* restrict context) {
     assert(stack->count >= 1 && "At least one item needs to be on the stack to evaluate the confiditon of the while");
 
-    int64_t condition = _stack_top(*stack);
+    int64_t condition = stack_top(*stack);
     da_pop(*stack);
 
     while (condition) {
         stack_execute(stack, &context->inner_block);
 
         assert(stack->count >= 1 && "At least one item needs to be on the stack to evaluate the confiditon of the while");
-        condition = _stack_top(*stack);
+        condition = stack_top(*stack);
         da_pop(*stack);
     }
 }
@@ -275,5 +273,5 @@ void _execute_exit(Stack* stack) {
         exit(0);
     }
 
-    exit(_stack_top(*stack));
+    exit(stack_top(*stack));
 }

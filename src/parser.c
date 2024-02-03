@@ -57,7 +57,7 @@ int32_t _parse_instructions(Instructions* restrict inst, const char* restrict* r
     while (**cursor != '\0') {
         // Break on end tokens
         for (int32_t i = 0; i < num_end_tokens; ++i) {
-            if (strcmp(*cursor, end_tokens[i]) == 0) {
+            if (strncmp(*cursor, end_tokens[i], strlen(end_tokens[i])) == 0) {
                 return i;
             }
         }
@@ -111,7 +111,7 @@ int _try_parse_comment(const char* restrict* restrict cursor) {
 
 int _try_parse_simple(Instructions* restrict inst, const char* restrict* restrict cursor, const char* restrict keyword,
                       InstructionType type) {
-    if (strcmp(*cursor, keyword) == 0) {
+    if (strncmp(*cursor, keyword, strlen(keyword)) == 0) {
         Instruction instruction = {0};
         instruction.type = type;
 
@@ -146,7 +146,7 @@ int _try_parse_push(Instructions* restrict inst, const char* restrict* restrict 
 }
 
 int _try_parse_if(Instructions* restrict inst, const char* restrict* restrict cursor) {
-    if (strcmp(*cursor, "if") == 0) {
+    if (strncmp(*cursor, "if", 2) == 0) {
         _next_token(cursor);  // Consumes "if"
 
         Instruction instruction = {0};
@@ -170,7 +170,7 @@ int _try_parse_if(Instructions* restrict inst, const char* restrict* restrict cu
 }
 
 int _try_parse_while(Instructions* restrict inst, const char* restrict* restrict cursor) {
-    if (strcmp(*cursor, "while") == 0) {
+    if (strncmp(*cursor, "while", 5) == 0) {
         _next_token(cursor);  // Consumes "while"
 
         Instruction instruction = {0};
