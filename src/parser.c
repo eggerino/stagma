@@ -66,17 +66,6 @@ int32_t _parse_instructions(Instructions* restrict inst, const char* restrict* r
             continue;
         }
 
-        int result_simple = 0;
-        for (int i = 0; i < COUNT_SIMPLE_KEYWORDS; ++i) {
-            result_simple = _try_parse_simple(inst, cursor, SIMPLE_KEYWORDS[i], SIMPLE_KEYWORD_TYPES[i]);
-            if (result_simple) {
-                break;
-            }
-        }
-        if (result_simple) {
-            continue;
-        }
-
         if (_try_parse_push(inst, cursor)) {
             continue;
         }
@@ -86,6 +75,18 @@ int32_t _parse_instructions(Instructions* restrict inst, const char* restrict* r
         }
 
         if (_try_parse_while(inst, cursor)) {
+            continue;
+        }
+
+        // Parse simple keywords last, "-" might catch negative number as subtraction
+        int result_simple = 0;
+        for (int i = 0; i < COUNT_SIMPLE_KEYWORDS; ++i) {
+            result_simple = _try_parse_simple(inst, cursor, SIMPLE_KEYWORDS[i], SIMPLE_KEYWORD_TYPES[i]);
+            if (result_simple) {
+                break;
+            }
+        }
+        if (result_simple) {
             continue;
         }
 
