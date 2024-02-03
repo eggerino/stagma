@@ -90,7 +90,12 @@ int32_t _parse_instructions(Instructions* restrict inst, const char* restrict* r
             continue;
         }
 
-        assert(TRUE && "Illegal token");
+        if (_is_delimiter(**cursor)) {
+            _next_token(cursor);
+            continue;
+        }
+
+        assert(FALSE && "Illegal token");
     }
 
     return -1;
