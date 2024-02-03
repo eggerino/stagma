@@ -6,6 +6,7 @@ add_executable(stagma
     "src/ast.c"
     "src/interpreter.c"
     "src/parser.c"
+    "src/repl.c"
     "src/runtime.c"
     "src/stagma.c"
 )
