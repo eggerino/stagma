@@ -6,6 +6,6 @@ Educational project to learn about interpreters/compilers for executing source c
 
 # Planed components for toolchain
 
-- [ ] Interpreter
+- [x] Interpreter
 - [ ] REPL
 - [ ] Compiler
