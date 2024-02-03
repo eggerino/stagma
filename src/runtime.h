@@ -14,6 +14,6 @@ typedef struct {
 
 Stack* stack_new(size_t initial_capacity);
 void stack_delete(Stack* stack);
-void stack_execute(Stack* stack, const Instructions* instructions);
+void stack_execute(Stack* restrict stack, const Instructions* restrict instructions);
 
 #endif

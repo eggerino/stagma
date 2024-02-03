@@ -4,7 +4,9 @@ project(stagma)
 
 add_executable(stagma
     "src/ast.c"
+    "src/runtime.c"
     "src/stagma.c"
 )
+target_link_libraries(stagma m) # Link math.h
 
 add_executable(dynamic-array-test "src/dynamic_array.test.c")

@@ -12,10 +12,13 @@ void instructions_delete(Instructions* inst) {
 
 void _free_fields(Instructions* inst) {
     for (size_t i = 0; i < inst->count; ++i) {
-        static_assert(COUNT_INSTRUCTIONCONTEXT == 2);
+        static_assert(COUNT_INSTRUCTIONCONTEXT == 3);
         switch (inst->items[i].type) {
+            case INST_PUSH:
+                break;
+
             case INST_IF:
-                _free_fields(&inst->items[i].context.if_instruction.inner_block);
+                _free_fields(&inst->items[i].context.if_instruction.if_block);
                 _free_fields(&inst->items[i].context.if_instruction.else_block);
                 break;
 

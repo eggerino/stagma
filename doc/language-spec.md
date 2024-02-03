@@ -154,7 +154,7 @@ E.g.: `9 2 ^` will raise 9 to the 2nd power. The stack only contains 81.
 
 `if ... [else] ... end`
 
-Pops the top value. If the value is non zero, the inner instructions execute. If the value is zero, the else instructions execute if any.
+Pops the top value. If the value is non zero, the if instructions execute. If the value is zero, the else instructions execute if any.
 
 E.g.: `65 input if print else err end` will print "A" to the standard output for a non zero input. If a zero is provided, "A" is printed to the standard error.
 
@@ -172,6 +172,5 @@ E.g.: `1 while 65 print 1 end` runs a infinte loop and prints "A" in every itera
 `exit`
 
 Pops the top value and exits the program with the poped value as the return code. If the stack is empty, a zero is returned implicitly.
-This instruction is implicitly called at the end of every program.
 
 E.g.: `1 exit 65 print` exits the program with 1 before printing "A".
