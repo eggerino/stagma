@@ -33,9 +33,10 @@ typedef enum InstructionType {
     INST_MOD,
     INST_POW,
 
-    // Conditionals
+    // Control flow
     INST_IF,
     INST_WHILE,
+    INST_EXIT,
 
     // Exhaustive assert value
     COUNT_INST

@@ -148,7 +148,7 @@ Pops the two top values, raises the second value to the power of the top value a
 
 E.g.: `9 2 ^` will raise 9 to the 2nd power. The stack only contains 81.
 
-### Conditionals
+### Control flow
 
 #### If
 
@@ -166,3 +166,12 @@ Pops the top value. If the value is non zero, the inner instructions execute and
 The inner block is skipped and the execution continues after the block.
 
 E.g.: `1 while 65 print 1 end` runs a infinte loop and prints "A" in every iteration.
+
+#### Exit
+
+`exit`
+
+Pops the top value and exits the program with the poped value as the return code. If the stack is empty, a zero is returned implicitly.
+This instruction is implicitly called at the end of every program.
+
+E.g.: `1 exit 65 print` exits the program with 1 before printing "A".
