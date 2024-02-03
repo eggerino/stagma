@@ -68,9 +68,7 @@ char* _read_stdin(void) {
     char buffer[BUFFER_SIZE];
     ssize_t num_read;
     while ((num_read = read(STDIN_FILENO, buffer, BUFFER_SIZE)) > 0) {
-        for (ssize_t i = 0; i < num_read; ++i) {
-            da_push(str, buffer[i]);
-        }
+        da_extend(str, buffer, num_read);
     }
 
     if (num_read == -1) {       // Return null on error (e.g. interupt signal)
