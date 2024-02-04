@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "dynamic_array.h"
+#include "info.h"
 #include "parser.h"
 #include "runtime.h"
 
@@ -16,14 +17,14 @@ typedef struct String {
     char* items;
 } String;
 
-static void _print_controls(void);
+static void _print_controls(const char* program_name);
 static char* _read_stdin(void);
 static void _print_stack(const Stack* stack);
 
-int repl_main(void) {
+int repl_main(const char* program_name) {
     Stack* stack = stack_new(8);
 
-    _print_controls();
+    _print_controls(program_name);
     for (size_t input_count = 0; TRUE; ++input_count) {
         // Read
         printf("[%d] >>> ", input_count);
@@ -55,8 +56,8 @@ int repl_main(void) {
     return return_code;
 }
 
-void _print_controls(void) {
-    printf("stagma REPL\n");
+void _print_controls(const char* program_name) {
+    printf("%s repl %s\n", program_name, VERSION);
     printf("\tCTRL+D:\tconfirm input\n");
     printf("\tCTRL+C:\texit\n");
 }
