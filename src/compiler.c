@@ -15,8 +15,9 @@ static void _generate_print(FILE* stream);
 static void _generate_err(FILE* stream);
 static void _generate_powll(FILE* stream);
 static void _generate_start_symbol(const Instructions* inst, FILE* stream, int32_t* hash);
+static void _generate_args(FILE* stream);
 
-static void _generate_default_exit(FILE* stream);
+static void _generate_exit(FILE* stream);
 
 int generate_asm(const Instructions* inst, FILE* stream) {
     int32_t hash = _initial_hash();
@@ -122,44 +123,47 @@ void _generate_input(FILE* stream) {
             "    input:                          ; reads an integer from the stdin and returns it (rax)\n"
             "        mov rax, 0                  ; read syscall\n"
             "        mov rdi, 0                  ; stdin\n"
-            "        mov rsi, ioBuffer           ; use ioBuffer\n"
+            "        mov rsi, %s\n"
             "        mov rdx, 256                ; use all 256 bytes\n"
             "        syscall                     ; read from stdin into the io buffer\n"
             "\n"
-            "        mov rdi, ioBuffer           ; use ioBuffer\n"
+            "        mov rdi, %s\n"
             "        mov rsi, rax                ; only convert the read number of characters\n"
             "        call atoll                  ; convert the string to an integer\n"
             "        ret\n"
             "\n"
-            "\n");
+            "\n",
+            IO_BUFFER, IO_BUFFER);
 }
 
 void _generate_print(FILE* stream) {
     fprintf(stream,
             "    print:                          ; prints the ascii value (rdi) to stdout\n"
-            "        mov [ioBuffer], rdi         ; place the value to print into ioBuffer\n"
+            "        mov [%s], rdi\n"
             "        mov rax, 1                  ; write syscall\n"
             "        mov rdi, 1                  ; stdout\n"
-            "        mov rsi, ioBuffer           ; use ioBuffer\n"
+            "        mov rsi, %s\n"
             "        mov rdx, 1                  ; only write one character\n"
             "        syscall                     ; write io buffer to stdout\n"
             "        ret\n"
             "\n"
-            "\n");
+            "\n",
+            IO_BUFFER, IO_BUFFER);
 }
 
 void _generate_err(FILE* stream) {
     fprintf(stream,
             "    err:                            ; prints the ascii value (rdi) to stderr\n"
-            "        mov [ioBuffer], rdi         ; place the value to print into ioBuffer\n"
+            "        mov [%s], rdi\n"
             "        mov rax, 1                  ; write syscall\n"
             "        mov rdi, 2                  ; stderr\n"
-            "        mov rsi, ioBuffer           ; use ioBuffer\n"
+            "        mov rsi, %s\n"
             "        mov rdx, 1                  ; only write one character\n"
             "        syscall                     ; write io buffer to stdout\n"
             "        ret\n"
             "\n"
-            "\n");
+            "\n",
+            IO_BUFFER, IO_BUFFER);
 }
 
 void _generate_powll(FILE* stream) {
@@ -194,13 +198,51 @@ void _generate_powll(FILE* stream) {
 
 void _generate_start_symbol(const Instructions* inst, FILE* stream, int32_t* hash) {
     fprintf(stream, "    _start:\n");
-    _generate_default_exit(stream);
+    _generate_args(stream);
+
+    _generate_exit(stream);
 }
 
-void _generate_default_exit(FILE* stream) {
+void _generate_args(FILE* stream) {
     fprintf(stream,
-            "        ; default exit\n"
+            "        ; args\n"
+            "        ; r12: argc\n"
+            "        ; r13: if\n"
+            "        ; r14: ptr\n"
+            "\n"
+            "        mov r12, [rsp]              ; get argc from the stack\n"
+            "        dec r12                     ; ignore first argument (program name)\n"
+            "        mov r13, 0                  ; i = 0\n"
+            "\n"
+            "        push 0                      ; place the default return value before args\n"
+            "\n"
+            "    .args_loop:\n"
+            "        cmp r13, r12                ; if (i == argc)\n"
+            "        je .args_loop_done          ;     break;\n"
+            "\n"
+            "        mov r14, r12                ; the current argument to push is argc \n"
+            "        add r14, 2                  ; + 2 items above the stack pointer\n"
+            "        imul r14, 8                 ; convert count to size\n"
+            "        add r14, rsp                ; offset by stack pointer to get pointer to argument\n"
+            "\n"
+            "        mov rdi, [r14]              ; place argument in rdi for atoll\n"
+            "        mov rsi, 256                ; use null termination for stop criteria in atoll\n"
+            "        call atoll\n"
+            "\n"
+            "        push rax                    ; push the parsed integer argument to the stack\n"
+            "        inc r13                     ; ++i\n"
+            "\n"
+            "        jmp .args_loop              ; continue the loop\n"
+            "\n"
+            "    .args_loop_done:\n"
+            "        push r12                    ; push argc itself on the stack\n"
+            "\n");
+}
+
+void _generate_exit(FILE* stream) {
+    fprintf(stream,
+            "        ; exit\n"
             "        mov rax, 60\n"
-            "        mov rdi, 0\n"
+            "        pop rdi\n"
             "        syscall\n");
 }
