@@ -40,7 +40,7 @@
             assert((da).items && "Unable to increase capacity of dynamic array."); \
         }                                                                          \
                                                                                    \
-        for (size_t __da_extend_i = 0; __da_extend_i < (n); ++__da_extend_i) {     \
+        for (ssize_t __da_extend_i = 0; __da_extend_i < (n); ++__da_extend_i) {     \
             (da).items[(da).count++] = (src)[__da_extend_i];                       \
         }                                                                          \
     } while (0)
