@@ -27,7 +27,7 @@ int repl_main(const char* program_name) {
     _print_controls(program_name);
     for (size_t input_count = 0; TRUE; ++input_count) {
         // Read
-        printf("[%d] >>> ", input_count);
+        printf("[%ld] >>> ", input_count);
         fflush(stdout);
         fflush(stderr);
         char* input = _read_stdin();
@@ -89,7 +89,7 @@ void _print_stack(const Stack* stack) {
     }
 
     for (size_t i = 0; i < stack->count; ++i) {
-        printf("[%d]:\t%d\n", i, stack->items[i]);
+        printf("[%ld]:\t%ld\n", i, stack->items[i]);
     }
     printf("\n");
 }

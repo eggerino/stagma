@@ -175,7 +175,7 @@ void _execute_err(Stack* stack) {
 
 void _execute_input(Stack* stack) {
     int64_t input;
-    int result = scanf("%lld", &input);
+    int result = scanf("%ld", &input);
 
     assert(result == 1 && "Could not read value from stdin to input");
 
