@@ -117,7 +117,7 @@ section .text
         mov rdi, 3
         push rdi
 
-        ; div
+        ; mod
         pop rdi
         pop rax
         cqo
