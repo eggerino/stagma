@@ -9,7 +9,7 @@ Educational project to learn about interpreters/compilers for executing source c
 - `mkdir build`
 - `cd build`
 - `cmake ..`
-- `make`
+- `cmake --build .`
 
 # Run interpreter
 
