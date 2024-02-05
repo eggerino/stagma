@@ -12,6 +12,7 @@ add_executable(stagma
     "src/runtime.c"
     "src/stagma.c"
 )
+target_compile_options(stagma PRIVATE -Wall)
 target_link_libraries(stagma m) # Link math.h
 
 add_executable(stagmac
@@ -22,5 +23,6 @@ add_executable(stagmac
     "src/parser.c"
     "src/stagmac.c"
 )
+target_compile_options(stagmac PRIVATE -Wall)
 
 add_executable(dynamic-array-test "src/dynamic_array.test.c")
