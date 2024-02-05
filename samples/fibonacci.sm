@@ -1,0 +1,70 @@
+# Compute n-th fibonacci number #
+
+input               # Get n from stdin #
+
+#
+    Special cases
+    =============
+#
+dup 1 - if else     # Check for input 1 #
+    49 print
+    10 print
+    0 exit
+end
+dup 2 - if else     # Check for input 2 #
+    49 print
+    10 print
+    0 exit
+end
+
+
+#
+    Computation
+    ===========
+#
+1 -                 # Decrement n by 1 since first two cases already done #
+1 1                 # Place state #
+
+3 deref 1 -         # Get n - 1 to top #
+dup while
+
+    3 deref         # Copy state to top #
+    3 deref
+
+    swap            # advance state once #
+    2 deref
+    +
+
+    3 deref 1 -     # Get n - 1 to top #
+
+dup end
+
+pop                 # pop the n - 1 (will be zero after loop exit) #
+                    # result is on top of the stack #
+
+
+#
+    Output
+    ======
+#
+0 swap              # Place a zero below the number for end condition in print loop #
+dup 10 %            # Place the last digit in stack #
+1                   # Place a one as condtion in print loop #
+3 deref 10 /        # Place a tenth of the number #
+
+dup while
+
+    dup 10 %        # Place the last digit in stack #
+    1               # Place a one as condtion in print loop #
+    3 deref 10 /    # Place a tenth of the number #
+
+dup end
+
+pop                 # pop the remaining zero from building the string #
+while
+    48 + print      # Convert digit number to digit character #
+    pop             # pop the ten divion result #
+end
+
+10 print
+0                   # return with zero #
