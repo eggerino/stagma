@@ -21,7 +21,8 @@
             assert((da).items && "Unable to increase capacity of dynamic array."); \
         }                                                                          \
                                                                                    \
-        (da).items[(da).count++] = item;                                           \
+        (da).items[(da).count] = item;                                             \
+        ++(da).count;                                                              \
     } while (0)
 
 #define da_extend(da, src, n)                                                      \
