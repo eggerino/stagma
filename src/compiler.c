@@ -1,5 +1,7 @@
 #include "compiler.h"
 
+#include <assert.h>
+
 #define IO_BUFFER "io_buffer"
 #define IO_BUFFER_SIZE 256
 
@@ -8,16 +10,42 @@ static void _next_hash(int32_t* hash);
 
 static void _generate_section_bss(FILE* stream);
 static void _generate_section_text(const Instructions* inst, FILE* stream, int32_t* hash);
+
 static void _generate_standard_library(FILE* stream);
-static void _generate_atoll(FILE* stream);
-static void _generate_input(FILE* stream);
-static void _generate_print(FILE* stream);
-static void _generate_err(FILE* stream);
-static void _generate_powll(FILE* stream);
+static void _generate_lib_atoll(FILE* stream);
+static void _generate_lib_input(FILE* stream);
+static void _generate_lib_print(FILE* stream);
+static void _generate_lib_err(FILE* stream);
+static void _generate_lib_powll(FILE* stream);
+
 static void _generate_start_symbol(const Instructions* inst, FILE* stream, int32_t* hash);
 static void _generate_args(FILE* stream);
+static void _generate_instructions(const Instructions* inst, FILE* stream, int32_t* hash);
 
-static void _generate_exit(FILE* stream);
+// Stack manupulation
+static void _generate_inst_push(const PushInstructionContext* context, FILE* stream);
+static void _generate_inst_pop(FILE* stream);
+static void _generate_inst_swap(FILE* stream);
+static void _generate_inst_dup(FILE* stream);
+static void _generate_inst_deref(FILE* stream);
+
+// IO
+static void _generate_inst_print(FILE* stream);
+static void _generate_inst_err(FILE* stream);
+static void _generate_inst_input(FILE* stream);
+
+// Artithmetic
+static void _generate_inst_add(FILE* stream);
+static void _generate_inst_sub(FILE* stream);
+static void _generate_inst_mul(FILE* stream);
+static void _generate_inst_div(FILE* stream);
+static void _generate_inst_mod(FILE* stream);
+static void _generate_inst_pow(FILE* stream);
+
+// Control flow
+static void _generate_inst_if(const IfInstructionContext* context, FILE* stream, int32_t* hash);
+static void _generate_inst_while(const WhileInstructionContext* context, FILE* stream, int32_t* hash);
+static void _generate_inst_exit(FILE* stream);
 
 int generate_asm(const Instructions* inst, FILE* stream) {
     int32_t hash = _initial_hash();
@@ -50,14 +78,14 @@ void _generate_section_text(const Instructions* inst, FILE* stream, int32_t* has
 }
 
 void _generate_standard_library(FILE* stream) {
-    _generate_atoll(stream);
-    _generate_input(stream);
-    _generate_print(stream);
-    _generate_err(stream);
-    _generate_powll(stream);
+    _generate_lib_atoll(stream);
+    _generate_lib_input(stream);
+    _generate_lib_print(stream);
+    _generate_lib_err(stream);
+    _generate_lib_powll(stream);
 }
 
-void _generate_atoll(FILE* stream) {
+void _generate_lib_atoll(FILE* stream) {
     fprintf(stream,
             "    atoll:                          ; converts an ascii string (rdi) with length (rsi) to an integer (rax)\n"
             "        ; rax: result       Output\n"
@@ -118,13 +146,13 @@ void _generate_atoll(FILE* stream) {
             "\n");
 }
 
-void _generate_input(FILE* stream) {
+void _generate_lib_input(FILE* stream) {
     fprintf(stream,
             "    input:                          ; reads an integer from the stdin and returns it (rax)\n"
             "        mov rax, 0                  ; read syscall\n"
             "        mov rdi, 0                  ; stdin\n"
             "        mov rsi, %s\n"
-            "        mov rdx, 256                ; use all 256 bytes\n"
+            "        mov rdx, %d\n"
             "        syscall                     ; read from stdin into the io buffer\n"
             "\n"
             "        mov rdi, %s\n"
@@ -133,10 +161,10 @@ void _generate_input(FILE* stream) {
             "        ret\n"
             "\n"
             "\n",
-            IO_BUFFER, IO_BUFFER);
+            IO_BUFFER, IO_BUFFER_SIZE, IO_BUFFER);
 }
 
-void _generate_print(FILE* stream) {
+void _generate_lib_print(FILE* stream) {
     fprintf(stream,
             "    print:                          ; prints the ascii value (rdi) to stdout\n"
             "        mov [%s], rdi\n"
@@ -151,7 +179,7 @@ void _generate_print(FILE* stream) {
             IO_BUFFER, IO_BUFFER);
 }
 
-void _generate_err(FILE* stream) {
+void _generate_lib_err(FILE* stream) {
     fprintf(stream,
             "    err:                            ; prints the ascii value (rdi) to stderr\n"
             "        mov [%s], rdi\n"
@@ -166,7 +194,7 @@ void _generate_err(FILE* stream) {
             IO_BUFFER, IO_BUFFER);
 }
 
-void _generate_powll(FILE* stream) {
+void _generate_lib_powll(FILE* stream) {
     fprintf(stream,
             "    powll:              ; computes the exponentiation result (rax) with base (rdi) and exponent (rsi)\n"
             "        ; rax: result   Output\n"
@@ -199,8 +227,8 @@ void _generate_powll(FILE* stream) {
 void _generate_start_symbol(const Instructions* inst, FILE* stream, int32_t* hash) {
     fprintf(stream, "    _start:\n");
     _generate_args(stream);
-
-    _generate_exit(stream);
+    _generate_instructions(inst, stream, hash);
+    _generate_inst_exit(stream);
 }
 
 void _generate_args(FILE* stream) {
@@ -226,7 +254,7 @@ void _generate_args(FILE* stream) {
             "        add r14, rsp                ; offset by stack pointer to get pointer to argument\n"
             "\n"
             "        mov rdi, [r14]              ; place argument in rdi for atoll\n"
-            "        mov rsi, 256                ; use null termination for stop criteria in atoll\n"
+            "        mov rsi, %d\n"
             "        call atoll\n"
             "\n"
             "        push rax                    ; push the parsed integer argument to the stack\n"
@@ -236,13 +264,277 @@ void _generate_args(FILE* stream) {
             "\n"
             "    .args_loop_done:\n"
             "        push r12                    ; push argc itself on the stack\n"
+            "\n",
+            IO_BUFFER_SIZE);
+}
+
+void _generate_instructions(const Instructions* inst, FILE* stream, int32_t* hash) {
+    for (size_t i = 0; i < inst->count; ++i) {
+        static_assert(COUNT_INST == 17);  // Exhaustive pattern matching
+        switch (inst->items[i].type) {
+            // Stack manupulation
+            case INST_PUSH:
+                _generate_inst_push(&inst->items[i].context.push_instruction, stream);
+                break;
+
+            case INST_POP:
+                _generate_inst_pop(stream);
+                break;
+
+            case INST_SWAP:
+                _generate_inst_swap(stream);
+                break;
+
+            case INST_DUP:
+                _generate_inst_dup(stream);
+                break;
+
+            case INST_DEREF:
+                _generate_inst_deref(stream);
+                break;
+
+            // IO
+            case INST_PRINT:
+                _generate_inst_print(stream);
+                break;
+
+            case INST_ERR:
+                _generate_inst_err(stream);
+                break;
+
+            case INST_INPUT:
+                _generate_inst_input(stream);
+                break;
+
+            // Arithmetic
+            case INST_ADD:
+                _generate_inst_add(stream);
+                break;
+
+            case INST_SUB:
+                _generate_inst_sub(stream);
+                break;
+
+            case INST_MUL:
+                _generate_inst_mul(stream);
+                break;
+
+            case INST_DIV:
+                _generate_inst_div(stream);
+                break;
+
+            case INST_MOD:
+                _generate_inst_mod(stream);
+                break;
+
+            case INST_POW:
+                _generate_inst_pow(stream);
+                break;
+
+            // Control flow
+            case INST_IF:
+                _generate_inst_if(&inst->items[i].context.if_instruction, stream, hash);
+                break;
+
+            case INST_WHILE:
+                _generate_inst_while(&inst->items[i].context.while_instruction, stream, hash);
+                break;
+
+            case INST_EXIT:
+                _generate_inst_exit(stream);
+                break;
+
+            default:
+                assert(0 && "Unreachable");
+                break;
+        }
+    }
+}
+
+void _generate_inst_push(const PushInstructionContext* context, FILE* stream) {
+    fprintf(stream,
+            "        ; push %ld\n"
+            "        mov rdi, %ld\n"
+            "        push rdi\n"
+            "\n",
+            context->literal, context->literal);
+}
+
+void _generate_inst_pop(FILE* stream) {
+    fprintf(stream,
+            "        ; pop\n"
+            "        pop rdi\n"
             "\n");
 }
 
-void _generate_exit(FILE* stream) {
+void _generate_inst_swap(FILE* stream) {
+    fprintf(stream,
+            "        ; swap\n"
+            "        mov rdi, [rsp]\n"
+            "        mov rsi, [rsp + 8]\n"
+            "        mov [rsp], rsi\n"
+            "        mov [rsp + 8], rdi\n"
+            "\n");
+}
+
+void _generate_inst_dup(FILE* stream) {
+    fprintf(stream,
+            "        ; dup\n"
+            "        mov rdi, [rsp]\n"
+            "        push rdi\n"
+            "\n");
+}
+
+void _generate_inst_deref(FILE* stream) {
+    fprintf(stream,
+            "        ; deref\n"
+            "        mov rdi, [rsp]\n"
+            "        imul rdi, 8\n"
+            "        add rdi, rsp\n"
+            "        mov rsi, [rdi]\n"
+            "        mov [rsp], rsi\n"
+            "\n");
+}
+
+void _generate_inst_print(FILE* stream) {
+    fprintf(stream,
+            "        ; print\n"
+            "        pop rdi\n"
+            "        call print\n"
+            "\n");
+}
+
+void _generate_inst_err(FILE* stream) {
+    fprintf(stream,
+            "        ; err\n"
+            "        pop rdi\n"
+            "        call err\n"
+            "\n");
+}
+
+void _generate_inst_input(FILE* stream) {
+    fprintf(stream,
+            "        ; input\n"
+            "        call input\n"
+            "        push rax\n"
+            "\n");
+}
+
+void _generate_inst_add(FILE* stream) {
+    fprintf(stream,
+            "        ; add\n"
+            "        pop rdi\n"
+            "        add [rsp], rdi\n"
+            "\n");
+}
+
+void _generate_inst_sub(FILE* stream) {
+    fprintf(stream,
+            "        ; sub\n"
+            "        pop rdi\n"
+            "        sub [rsp], rdi\n"
+            "\n");
+}
+
+void _generate_inst_mul(FILE* stream) {
+    fprintf(stream,
+            "        ; mul\n"
+            "        pop rdi\n"
+            "        mov rsi, [rsp]\n"
+            "        imul rsi, rdi\n"
+            "        mov [rsp], rsi\n"
+            "\n");
+}
+
+void _generate_inst_div(FILE* stream) {
+    fprintf(stream,
+            "        ; div\n"
+            "        pop rdi\n"
+            "        pop rax\n"
+            "        cqo\n"
+            "        idiv rdi\n"
+            "        push rax\n"
+            "\n");
+}
+
+void _generate_inst_mod(FILE* stream) {
+    fprintf(stream,
+            "        ; mod\n"
+            "        pop rdi\n"
+            "        pop rax\n"
+            "        cqo\n"
+            "        idiv rdi\n"
+            "        push rdx\n"
+            "\n");
+}
+
+void _generate_inst_pow(FILE* stream) {
+    fprintf(stream,
+            "        ; pow\n"
+            "        pop rsi\n"
+            "        pop rdi\n"
+            "        call powll\n"
+            "        push rax\n"
+            "\n");
+}
+
+void _generate_inst_if(const IfInstructionContext* context, FILE* stream, int32_t* hash) {
+    int32_t this_hash = *hash;
+    _next_hash(hash);
+
+    fprintf(stream,
+            "        ; if (hash = %d)\n"
+            "        pop rdi\n"
+            "        cmp rdi, 0\n"
+            "        je .else_block_%d\n"
+            "\n",
+            this_hash, this_hash);
+
+    _generate_instructions(&context->if_block, stream, hash);
+
+    fprintf(stream,
+            "        jmp .continue_%d\n"
+            "\n"
+            "    .else_block_%d:\n"
+            "\n",
+            this_hash, this_hash);
+
+    _generate_instructions(&context->else_block, stream, hash);
+
+    fprintf(stream,
+            "    .continue_%d:\n"
+            "\n",
+            this_hash);
+}
+
+void _generate_inst_while(const WhileInstructionContext* context, FILE* stream, int32_t* hash) {
+    int32_t this_hash = *hash;
+    _next_hash(hash);
+
+    fprintf(stream,
+            "        ; while (hash = %d)\n"
+            "    .loop_%d:\n"
+            "        pop rdi\n"
+            "        cmp rdi, 0\n"
+            "        je .continue_%d\n"
+            "\n",
+            this_hash, this_hash, this_hash);
+
+    _generate_instructions(&context->inner_block, stream, hash);
+
+    fprintf(stream,
+            "        jmp .loop_%d\n"
+            "\n"
+            "    .continue_%d:\n"
+            "\n",
+            this_hash, this_hash);
+}
+
+void _generate_inst_exit(FILE* stream) {
     fprintf(stream,
             "        ; exit\n"
             "        mov rax, 60\n"
             "        pop rdi\n"
-            "        syscall\n");
+            "        syscall\n"
+            "\n");
 }
