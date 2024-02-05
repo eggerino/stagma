@@ -42,3 +42,8 @@ These commands can also be run as an one liner for convenience like
 - [x] Interpreter
 - [x] REPL
 - [x] Compiler
+
+# Planed changes
+
+- [ ] Merge swap and deref into swap. E.g. pop the distance n, swap the top with item n slots away. 0 swap will be a noop.
+      Current swap & deref only allow for read random access. But not write random access
